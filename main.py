@@ -1,6 +1,10 @@
 import csv
 import random
 import time
+from dotenv import load_dotenv
+import os
+
+
 
 #Puts several dictionaries into a list
 #Put these into dictionaries and then put them into a list 
@@ -72,6 +76,11 @@ def check_player_input(quote:str, user_input:str):
     print (f'{correct} correct characters')
     print(f'Accuracy: {accuracy}%')    
 
+def Gemini(quote,author):
+
+    print("temp")
+
+
 
 def main():
     file_name = 'data.csv'
@@ -84,6 +93,7 @@ def main():
         
 
         quote=content.get("favorite_quote")
+        author=content.get("name")
         print(quote)
         start_time=time.perf_counter()
         user_input=input("Input: ")
