@@ -51,9 +51,13 @@ def check_player_input(quote:str, user_input:str):
 
 
 
-    correct=0
-    accuracy=0
+    correct=accuracy=0
+    
     #use the smallest length to iterate through
+    #Can use color to change color here via quote[char] if possible
+    # or just make a new list 
+    # green=good, red = wrong
+
     for char in range(smallest_len):
         if quote[char]==user_input[char]:
             correct+=1
@@ -63,14 +67,10 @@ def check_player_input(quote:str, user_input:str):
     if user_input_len>quote_len:
         correct=-user_input-quote_len
     accuracy=round(correct/quote_len*100,2)
-    print (correct)
-    print(f'accuracy:{accuracy}%')    
-
-    
-    
-    
-
-    
+    print("---------------------------------------")
+    print("Results:\n")
+    print (f'{correct} correct characters')
+    print(f'Accuracy: {accuracy}%')    
 
 
 def main():
@@ -81,7 +81,7 @@ def main():
     play_again=False
     while play_again==False:
         content=get_random_quote(data)
-        print(content)
+        
 
         quote=content.get("favorite_quote")
         print(quote)
@@ -92,9 +92,10 @@ def main():
 
         # have to get words per minute, use user input, go through array, if space-> thats stopping point = one word 
             # wait if its just sapce that dictates words, count how many spaces = thats how many words there are, + 1 for the last word 
-            #Double spaces get fucked 
+            #Double spaces get fucked  FIX!!!!!
+
         total_words= user_input.count(" ") +1
-        words_per_minute= total_words/time_elapsed *60
+        words_per_minute= round(total_words/time_elapsed *60,2)
 
         check_player_input(quote, user_input)
         print(f'Time Elapsed: {time_elapsed} seconds')
