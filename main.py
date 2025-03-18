@@ -1,9 +1,18 @@
+import streamlit as st
 import csv
 import random
 import time
 from dotenv import load_dotenv
 import os
 from google import genai
+
+
+#BUGS:
+# pressing enter gives a new quote, not submits
+# pressing submit updates with a new quote
+# doesn't show anything about accuracy
+# time and wpm is bugged
+#play again doesn't reset user input 
 
 
 
@@ -84,53 +93,63 @@ def Gemini(quote:str,author:str):
     response = client.models.generate_content(
         model="gemini-2.0-flash", contents=f"Where is this quote from, give brief information about the book and author? The author is {author} and the quote is: {quote}"
     )
-    print(response.text)
+    st.write(response.text)
 
 
 
 def main():
-    file_name = 'data.csv'
-    data = read_csv_file(file_name)
-    print("Welcome! Let's play a game of quotes! Type the following quote! \n") 
-    
+    st.title("⌨️Quote Typing Speed Test⌨️")
 
-    play_again=False
-    while play_again==False:
+    if 'play_again' not in st.session_state:
+        st.session_state.play_again=False
+        st.session_state.start_time=None
+        st.session_state.quote=None
+        st.session_state.author=None
+
+    file_name='data.csv'
+    data=read_csv_file(file_name)
+
+    if not st.session_state.play_again:
         content=get_random_quote(data)
-        
+        st.session_state.quote=content.get("favorite_quote")
+        st.session_state.author=content.get("name")
+        st.session_state.start_time=time.perf_counter()
 
-        quote=content.get("favorite_quote")
-        author=content.get("name")
-        print(quote)
-        start_time=time.perf_counter()
-        user_input=input("Input: ")
+    st.subheader("Type the following quote!")
+    st.write(st.session_state.quote)
+
+    user_input= st.text_input("Your input:",key="user_input")
+
+    if st.button("Submit") or st.session_state.play_again:
+
         end_time=time.perf_counter()
-        #max to avoid div by 0
-        time_elapsed=max(1,round(end_time-start_time,2))
+        time_elapsed=max(1,round(end_time-st.session_state.start_time),2)
 
-        
+        check_player_input(st.session_state.quote,user_input)
+
         word_count=user_input.strip()
-        if not word_count:
-            total_words = 0
+        total_words=len(word_count.split()) if word_count else 0
+        words_per_minute=round(total_words/time_elapsed*60,2)
+
+        #Displays
+        st.subheader("Results")
+        st.write(f"Time: {time_elapsed}s | Words/Minute: {words_per_minute}")
+        st.write("AI Analysis:")
+        Gemini(st.session_state.quote,st.session_state.author)
+
+        if st.button("Play Again?"):
+            st.session_state.play_again=False
+            st.write("Thanks for playing!")
+            st.rerun()
         else:
-            total_words = len(word_count.split())
-        words_per_minute= round(total_words/time_elapsed *60,2)
-
-
-        check_player_input(quote, user_input)
-        print(f'Time Elapsed: {time_elapsed} seconds')
-        print(f"Words/minute: {words_per_minute} ")
-
-        print("---------------------------\n AI more info: \n")
-        Gemini(quote,author)
-        
+            
+            st.session_state.play_again=True
 
 
 
-        play_again=verify_player_input()
 
-
-main()
+if __name__=="__main__":
+    main()
 
 
 
