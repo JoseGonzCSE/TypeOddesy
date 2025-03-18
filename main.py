@@ -3,6 +3,7 @@ import random
 import time
 from dotenv import load_dotenv
 import os
+from google import genai
 
 
 
@@ -27,7 +28,7 @@ def read_csv_file(file_name):
 
 def get_random_quote(data):
     data_len=len(data)
-    random_index=random.randint(0,data_len)
+    random_index=random.randint(0,data_len-1)
 
     random_quote=data[random_index]
 
@@ -36,7 +37,7 @@ def get_random_quote(data):
 def verify_player_input():
     correct_input=False
     while correct_input==False:
-        userInput=input("Would you like to play again? y/n ")
+        userInput=input("\nWould you like to play again? y/n ")
         lower_input=userInput.lower()
         if lower_input=="y":
             return False
@@ -77,8 +78,13 @@ def check_player_input(quote:str, user_input:str):
     print(f'Accuracy: {accuracy}%')    
 
 def Gemini(quote,author):
+    load_dotenv()
 
-    print("temp")
+    client = genai.Client(api_key=os.getenv('API_KEY'))
+    response = client.models.generate_content(
+        model="gemini-2.0-flash", contents=f"Where is this quote from, give brief information about the book and author? The author is {author} and the quote is: {quote}"
+    )
+    print(response.text)
 
 
 
@@ -86,6 +92,7 @@ def main():
     file_name = 'data.csv'
     data = read_csv_file(file_name)
     print("Welcome! Let's play a game of quotes! Type the following quote! \n") 
+    
 
     play_again=False
     while play_again==False:
@@ -98,28 +105,29 @@ def main():
         start_time=time.perf_counter()
         user_input=input("Input: ")
         end_time=time.perf_counter()
-        time_elapsed=round(end_time-start_time,2)
+        #max to avoid div by 0
+        time_elapsed=max(1,round(end_time-start_time,2))
 
-        # have to get words per minute, use user input, go through array, if space-> thats stopping point = one word 
-            # wait if its just sapce that dictates words, count how many spaces = thats how many words there are, + 1 for the last word 
-            #Double spaces get fucked  FIX!!!!!
-
-        total_words= user_input.count(" ") +1
+        
+        word_count=user_input.strip()
+        if not word_count:
+            total_words = 0
+        else:
+            total_words = len(word_count.split())
         words_per_minute= round(total_words/time_elapsed *60,2)
+
 
         check_player_input(quote, user_input)
         print(f'Time Elapsed: {time_elapsed} seconds')
         print(f"Words/minute: {words_per_minute} ")
-        
+
+        print("---------------------------\n AI more info: \n")
+        Gemini(quote,author)
         
 
 
 
         play_again=verify_player_input()
-
-
-        
-        
 
 
 main()
