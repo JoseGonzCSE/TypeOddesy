@@ -77,7 +77,7 @@ def check_player_input(quote:str, user_input:str):
     print (f'{correct} correct characters')
     print(f'Accuracy: {accuracy}%')    
 
-def Gemini(quote,author):
+def Gemini(quote:str,author:str):
     load_dotenv()
 
     client = genai.Client(api_key=os.getenv('API_KEY'))
