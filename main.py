@@ -8,11 +8,10 @@ from google import genai
 
 
 #BUGS:
-# pressing enter gives a new quote, not submits
-# pressing submit updates with a new quote
-# doesn't show anything about accuracy
-# time and wpm is bugged
-#play again doesn't reset user input 
+# pressing enter gives a new quote
+# pressing enter leads to a new quote-> this leads that gemini and wpm to be on this new quote and not the one the user wrote
+# time and wpm is bugged because of bug #2
+
 
 
 
@@ -43,7 +42,7 @@ def get_random_quote(data):
 
     return random_quote
     
-def verify_player_input():
+# verify_player_input():
     correct_input=False
     while correct_input==False:
         userInput=input("\nWould you like to play again? y/n ")
@@ -79,12 +78,10 @@ def check_player_input(quote:str, user_input:str):
     #find difference in extra charcters
 
     if user_input_len>quote_len:
-        correct=-user_input-quote_len
+        correct-=user_input-quote_len
     accuracy=round(correct/quote_len*100,2)
-    print("---------------------------------------")
-    print("Results:\n")
-    print (f'{correct} correct characters')
-    print(f'Accuracy: {accuracy}%')    
+    st.write (f'{correct} correct characters')
+    st.write(f'Accuracy: {accuracy}%')    
 
 def Gemini(quote:str,author:str):
     load_dotenv()
@@ -115,35 +112,35 @@ def main():
         st.session_state.author=content.get("name")
         st.session_state.start_time=time.perf_counter()
 
-    st.subheader("Type the following quote!")
-    st.write(st.session_state.quote)
+        st.subheader("Type the following quote!")
+        st.write(st.session_state.quote)
 
-    user_input= st.text_input("Your input:",key="user_input")
+        user_input= st.text_input("Your input:",key="user_input",placeholder="Begin typing")
+        print(user_input)
+        
+        if user_input and user_input != "":
 
-    if st.button("Submit") or st.session_state.play_again:
+            end_time=time.perf_counter()
+            time_elapsed=max(1,round(end_time-st.session_state.start_time),2)
+            st.subheader("Results")
+            check_player_input(st.session_state.quote,user_input)
 
-        end_time=time.perf_counter()
-        time_elapsed=max(1,round(end_time-st.session_state.start_time),2)
+            word_count=user_input.strip()
+            total_words=len(word_count.split()) if word_count else 0
+            words_per_minute=round(total_words/time_elapsed*60,2)
 
-        check_player_input(st.session_state.quote,user_input)
-
-        word_count=user_input.strip()
-        total_words=len(word_count.split()) if word_count else 0
-        words_per_minute=round(total_words/time_elapsed*60,2)
-
-        #Displays
-        st.subheader("Results")
-        st.write(f"Time: {time_elapsed}s | Words/Minute: {words_per_minute}")
-        st.write("AI Analysis:")
-        Gemini(st.session_state.quote,st.session_state.author)
-
-        if st.button("Play Again?"):
-            st.session_state.play_again=False
-            st.write("Thanks for playing!")
-            st.rerun()
-        else:
+            #Displays
             
-            st.session_state.play_again=True
+            st.write(f"Time: {time_elapsed}s | Words/Minute: {words_per_minute}")
+            st.write("AI Analysis:")
+            Gemini(st.session_state.quote,st.session_state.author)
+
+
+            if st.button("Play Again?"):
+            #user wants to play again
+                user_input=""
+                st.rerun()
+            
 
 
 
