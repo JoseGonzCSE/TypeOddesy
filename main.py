@@ -66,8 +66,10 @@ def check_player_input(quote:str, user_input:str):
 
 def Gemini(quote:str,author:str):
     #load_dotenv()
-
-    client = genai.Client(api_key=os.getenv('API_KEY'))
+    api_key = os.getenv('API_KEY')
+    if not api_key:
+        raise ValueError("API_KEY is not set! Please make sure it's added in Streamlit Cloud Secrets.")
+    client = genai.Client(api_key)
     response = client.models.generate_content(
         model="gemini-2.0-flash", contents=f"Where is this quote from, give brief information about the book and author? The author is {author} and the quote is: {quote}"
     )
