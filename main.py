@@ -6,15 +6,6 @@ from dotenv import load_dotenv
 import os
 from google import genai
 
-
-#BUGS:
-# pressing enter gives a new quote
-# pressing enter leads to a new quote-> this leads that gemini and wpm to be on this new quote and not the one the user wrote
-# time and wpm is bugged because of bug #2
-
-
-
-
 #Puts several dictionaries into a list
 #Put these into dictionaries and then put them into a list 
 #where list[dict{name:value, favorite quote:value}.....] 
@@ -42,7 +33,7 @@ def get_random_quote(data):
 
     return random_quote
     
-# verify_player_input():
+# verify_player_input() for terminal stuffs:
     correct_input=False
     while correct_input==False:
         userInput=input("\nWould you like to play again? y/n ")
@@ -129,7 +120,6 @@ def main():
     # Submit button
     if st.button("✅ Check Result") and user_input:
         with st.container(border=True):
-       
             # Calculate results
             end_time = time.perf_counter()
             start_time = st.session_state.game_state['start_time'] or end_time
