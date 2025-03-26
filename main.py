@@ -2,7 +2,10 @@ import streamlit as st
 import csv
 import random
 import time
-from dotenv import load_dotenv
+
+#for local use
+#from dotenv import load_dotenv 
+
 import os
 from google import genai
 
@@ -62,7 +65,7 @@ def check_player_input(quote:str, user_input:str):
     st.write(f'**Accuracy:** {accuracy}%')  
 
 def Gemini(quote:str,author:str):
-    load_dotenv()
+    #load_dotenv()
 
     client = genai.Client(api_key=os.getenv('API_KEY'))
     response = client.models.generate_content(
