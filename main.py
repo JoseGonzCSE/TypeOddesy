@@ -56,32 +56,19 @@ def get_random_quote(data):
             print("please Enter a valid input (y/n)")
 
 def check_player_input(quote:str, user_input:str):
-    quote=list(quote)
-    user_input=list(user_input)
-    quote_len=len(quote)
-    user_input_len=len(user_input)
-    smallest_len=min(quote_len, user_input_len)
-
-
-
-    correct=accuracy=0
+    quote_chars = list(quote)
+    input_chars = list(user_input)
+    min_length = min(len(quote_chars), len(input_chars))
     
-    #use the smallest length to iterate through
-    #Can use color to change color here via quote[char] if possible
-    # or just make a new list 
-    # green=good, red = wrong
-
-    for char in range(smallest_len):
-        if quote[char]==user_input[char]:
-            correct+=1
+    correct = sum(1 for i in range(min_length) if quote_chars[i] == input_chars[i])
     
-    #find difference in extra charcters
-
-    if user_input_len>quote_len:
-        correct-=user_input-quote_len
-    accuracy=round(correct/quote_len*100,2)
-    st.write (f'{correct} correct characters')
-    st.write(f'Accuracy: {accuracy}%')    
+    # Penalize extra characters
+    if len(input_chars) > len(quote_chars):
+        correct -= (len(input_chars) - len(quote_chars))
+    
+    accuracy = round(correct/len(quote_chars)*100, 2) if quote_chars else 0
+    st.progress(correct/len(quote_chars),text=f"**Correct characters:** {correct}/{len(quote_chars)}")
+    st.write(f'**Accuracy:** {accuracy}%')  
 
 def Gemini(quote:str,author:str):
     load_dotenv()
@@ -94,62 +81,78 @@ def Gemini(quote:str,author:str):
 
 
 
+
 def main():
-    st.title("⌨️Quote Typing Speed Test⌨️")
+    st.title("⌨️ Quote Typing Speed Test ⌨️")
+    
+    # Initialize session state
+    if 'game_state' not in st.session_state:
+        st.session_state.game_state = {
+            'playing': False,
+            'start_time': None,
+            'quote': None,
+            'author': None,
+            'user_input': ''
+        }
 
-    if 'play_again' not in st.session_state:
-        st.session_state.play_again=False
-        st.session_state.start_time=None
-        st.session_state.quote=None
-        st.session_state.author=None
+    file_name = 'data.csv'
+    data = read_csv_file(file_name)
 
-    file_name='data.csv'
-    data=read_csv_file(file_name)
+    # Start new game
+    if not st.session_state.game_state['playing']:
+        content = get_random_quote(data)
+        st.session_state.game_state.update({
+            'playing': True,
+            'quote': content['favorite_quote'],
+            'author': content['name'],
+            'start_time': None,
+            'user_input': ''
+        })
 
-    if not st.session_state.play_again:
-        content=get_random_quote(data)
-        st.session_state.quote=content.get("favorite_quote")
-        st.session_state.author=content.get("name")
-        st.session_state.start_time=time.perf_counter()
+    # Display quote
+    st.subheader("Type the following quote!")
+    st.write(st.session_state.game_state['quote'])
 
-        st.subheader("Type the following quote!")
-        st.write(st.session_state.quote)
+    if not st.session_state.game_state['start_time']:
+        st.session_state.game_state['start_time'] = time.perf_counter()
 
-        user_input= st.text_input("Your input:",key="user_input",placeholder="Begin typing")
-        print(user_input)
+    # Text input with controlled state
+    user_input = st.text_input(
+        "Your input:",
+        value=st.session_state.game_state['user_input'],
+        key='user_input',
+        placeholder="Begin typing here..."
+    )
+    
+    
+
+    # Submit button
+    if st.button("✅ Check Result") and user_input:
+        with st.container(border=True):
+       
+            # Calculate results
+            end_time = time.perf_counter()
+            start_time = st.session_state.game_state['start_time'] or end_time
+            time_elapsed = max(1, round(end_time - start_time-2, 2))
+            
+            # Update results
+            st.subheader("🏆 Your Preformance:")
+            check_player_input(st.session_state.game_state['quote'], user_input)
+            
+            word_count = len(user_input.strip().split())
+            wpm = round((word_count / time_elapsed) * 60, 2)
+
+            cols = st.columns(2)
+            cols[0].metric("⏱️ Time",f'{time_elapsed}s')
+            cols[1].metric('🚀 WPM', f'{wpm}')
+
+            st.divider()
+            st.subheader("📚 About the Quote")
+            with st.spinner("Thinking...", show_time=True):
+                Gemini(st.session_state.game_state['quote'], st.session_state.game_state['author'])
+
         
-        if user_input and user_input != "":
+        
 
-            end_time=time.perf_counter()
-            time_elapsed=max(1,round(end_time-st.session_state.start_time),2)
-            st.subheader("Results")
-            check_player_input(st.session_state.quote,user_input)
-
-            word_count=user_input.strip()
-            total_words=len(word_count.split()) if word_count else 0
-            words_per_minute=round(total_words/time_elapsed*60,2)
-
-            #Displays
-            
-            st.write(f"Time: {time_elapsed}s | Words/Minute: {words_per_minute}")
-            st.write("AI Analysis:")
-            Gemini(st.session_state.quote,st.session_state.author)
-
-
-            if st.button("Play Again?"):
-            #user wants to play again
-                user_input=""
-                st.rerun()
-            
-
-
-
-
-if __name__=="__main__":
+if __name__ == "__main__":
     main()
-
-
-
-
-
-
