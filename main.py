@@ -69,7 +69,7 @@ def Gemini(quote:str,author:str):
     api_key = os.getenv('API_KEY')
     if not api_key:
         raise ValueError("API_KEY is not set! Please make sure it's added in Streamlit Cloud Secrets.")
-    client = genai.Client(api_key)
+    client = genai.Client(api_key=api_key)
     response = client.models.generate_content(
         model="gemini-2.0-flash", contents=f"Where is this quote from, give brief information about the book and author? The author is {author} and the quote is: {quote}"
     )
