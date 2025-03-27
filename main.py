@@ -66,7 +66,7 @@ def check_player_input(quote:str, user_input:str):
 
 def Gemini(quote:str,author:str):
     #load_dotenv()
-    api_key = os.getenv('API_KEY')
+    api_key = st.secrets["API_KEY"]
     if not api_key:
         raise ValueError("API_KEY is not set! Please make sure it's added in Streamlit Cloud Secrets.")
     client = genai.Client(api_key=api_key)
